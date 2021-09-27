@@ -101,23 +101,26 @@
 	   (to-hour (+ from-hour hour-shift))
 	   (to-day-name "")
 	   A-or-P)
-      (when (< to-min 0)
-	(setq to-min (+ to-min 60))
-	(setq to-hour (1- to-hour)))
+      (cond ((< to-min 0) (progn
+			    (setq to-min (+ to-min 60))
+			    (setq to-hour (1- to-hour))))
+	     ((= to-min 60) (progn
+			     (setq to-min 0)
+			     (setq to-hour (1+ to-hour)))))
       (cond ((>= to-hour 24) (progn
 			       (setq to-hour (- to-hour 24))
 			       (if (not (equal from-day nil))
 				   (setq to-day-name (nth (1+ from-day) days))
-				 (setq to-day-name "+ 1 day"))))
+				 (setq to-day-name "+1d"))))
 	    ((< to-hour 0) (progn
 			     (setq to-hour (+ 24 to-hour))
 			     (if (not (equal from-day nil))
 				 (setq to-day-name (nth (1- from-day) days))
-			       (setq to-day-name "- 1 day"))))
+			       (setq to-day-name "-1d"))))
 	    ((and (> to-hour 0) (< to-hour 24)) (if (not (equal from-day nil))
 						    (setq to-day-name (nth from-day days))
-						  (setq to-day-name ""))))
-      (cond ((= to-hour 0) (setq A-or-P "Midnight"))
+						  (setq to-day-name "+0d"))))
+      (cond ((and (= to-hour 0) (= to-min 0)) (setq A-or-P "Midnight"))
 	    ((< to-hour 12) (setq A-or-P "AM"))
 	    ((and (= to-hour 12) (= to-min 0)) (setq A-or-P "Noon"))
 	    ((or (> to-hour 12) (and (= to-hour 12) (> to-min 0))) (progn
