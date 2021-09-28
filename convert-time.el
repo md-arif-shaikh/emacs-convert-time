@@ -106,6 +106,9 @@
 			    (setq to-hour (1- to-hour))))
 	     ((= to-min 60) (progn
 			     (setq to-min 0)
+			     (setq to-hour (1+ to-hour))))
+	     ((> to-min 60) (progn
+			     (setq to-min (- to-min 60))
 			     (setq to-hour (1+ to-hour)))))
       (cond ((>= to-hour 24) (progn
 			       (setq to-hour (- to-hour 24))
