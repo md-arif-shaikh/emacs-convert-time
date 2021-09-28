@@ -23,7 +23,7 @@
 ;; 
 
 ;;; Code:
-
+(require 'org)
 (defcustom convert-time--time-zones-alist nil
   "Assoc list of month names."
   :type 'alist
@@ -31,6 +31,16 @@
 
 (defcustom convert-time--times-list nil
   "Times to convert."
+  :type 'list
+  :group 'convert-time)
+
+(defcustom convert-time--day-names-list '("SUN" "MON" "TUE" "WED" "THU" "FRI" "SAT")
+  "Abbreviation for local time zone."
+  :type 'list
+  :group 'convert-time)
+
+(defcustom convert-time--month-names-list '("JAN" "FEB" "MARCH" "APR" "MAY" "JUNE" "JULY" "AUG" "SEP" "OCT" "NOV" "DEC")
+  "Abbreviation for local time zone."
   :type 'list
   :group 'convert-time)
 
@@ -81,9 +91,62 @@
 				 "11:00 PM"
 				 "11:30 PM"))
 
+(defun convert-time--get-day-name (day month year)
+  "Get the day name from DAY MONTH and YEAR."
+  (nth (nth 6 (decode-time (encode-time (list 0 0 0 day month year nil nil nil)))) convert-time--day-names-list))
+
+(defun convert-time--get-day-month-year-number-from-date (date separator day-position month-position year-position)
+  "Get day, month and year numbers from a DATE with SEPARATOR.  DAY-POSITION, MONTH-POSITION and YEAR-POSITION helps to recognize the format of date."
+  (let* ((splitted-strings (split-string date separator))
+	 (day (string-to-number (nth day-position splitted-strings)))
+	 (month (string-to-number (nth month-position splitted-strings)))
+	 (year (string-to-number (nth year-position splitted-strings))))
+    (list day month year)))
+
+(defun convert-time--get-day-name-from-date (date separator day-position month-position year-position)
+  "Get day name from a DATE with SEPARATOR.  DAY-POSITION, MONTH-POSITION and YEAR-POSITION helps to recognize the format of date."
+  (let* ((splitted-strings (split-string date separator))
+	 (day (string-to-number (nth day-position splitted-strings)))
+	 (month (string-to-number (nth month-position splitted-strings)))
+	 (year (string-to-number (nth year-position splitted-strings))))
+    (convert-time--get-day-name day month year)))
+
+(defun convert-time--get-month-name-from-date (date separator month-position)
+  "Get month name from a DATE with SEPARATOR.  MONTH-POSITION is the position of month number in the date."
+  (let* ((splitted-strings (split-string date separator))
+	 (month (string-to-number (nth month-position splitted-strings))))
+    (nth (1- month) convert-time--month-names-list)))
+
+(defun convert-time--get-year-from-date (date separator year-position)
+  "Get year from a DATE with SEPARATOR.  YEAR-POSITION is the position of month number in the date."
+  (let* ((splitted-strings (split-string date separator)))
+    (string-to-number (nth year-position splitted-strings))))
+
+(defun convert-time--get-day-from-date (date separator day-position)
+  "Get day number from a DATE with SEPARATOR.  DAY-POSITION is the position of month number in the date."
+  (let* ((splitted-strings (split-string date separator)))
+    (string-to-number (nth day-position splitted-strings))))
+
+(defun convert-time--get-next-or-previous-date (date separator day-position month-position year-position delta)
+  "Get the next or previous date with DELTA time difference for a DATE with SEPARATOR.  DAY-POSITION, MONTH-POSITION and YEAR-POSITION helps to recognize the format of date."
+  (let* ((day-month-year (convert-time--get-day-month-year-number-from-date date separator day-position month-position year-position))
+	 (day (nth 0 day-month-year))
+	 (month (nth 1 day-month-year))
+	 (year (nth 2 day-month-year))
+	 (org-date-string (org-read-date nil nil delta nil (encode-time (list 0 0 0 day month year nil nil nil))))
+	 (org-date-strings-list (split-string org-date-string "-"))
+	 (org-year (nth 0 org-date-strings-list))
+	 (org-month (nth 1 org-date-strings-list))
+	 (org-day (nth 2 org-date-strings-list))
+	 (next-date-string-list '(0 0 0)))
+    (setf (nth day-position next-date-string-list) org-day)
+    (setf (nth month-position next-date-string-list) org-month)
+    (setf (nth year-position next-date-string-list) org-year)
+    (string-join next-date-string-list (if (string-equal separator "\\.") "." separator))))
+
 (defun convert-time--get-converted-time (time-to-convert from-zone-u to-zone-u)
   "Get converted time for TIME-TO-CONVERT from FROM-ZONE-U to another TO-ZONE-U."
-  (let* ((days '("Sun" "Mon" "Tue" "Wed" "Thu" "Fri" "Sat"))
+  (let* ((days convert-time--day-names-list)
 	 (time (parse-time-string (if (string-equal time-to-convert "Right Now")
 				      (current-time-string)
 				    time-to-convert)))
