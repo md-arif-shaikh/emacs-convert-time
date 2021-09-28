@@ -3,7 +3,9 @@
 ;; Copyright (C) 2021  Md Arif Shaikh
 
 ;; Author: Md Arif Shaikh <arifshaikh.astro@gmail.com>
-;; Keywords: 
+;; Homepage: https://github.com/md-arif-shaikh/emacs-convert-time
+;; Package-Requires: ((emacs "24.4"))
+;; Keywords:
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -19,6 +21,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
+;; This package offer utility to convert times between zones as well as other utilities.
 
 ;; 
 
